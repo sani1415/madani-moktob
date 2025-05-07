@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{{ _['absent_list'] }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <input type="date" class="form-control" value="{{ selected_date }}" onchange="window.location.href='{{ url_for('absent_list') }}?date=' + this.value">
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>{{ _['roll_number'] }}</th>
+                        <th>{{ _['full_name'] }}</th>
+                        <th>{{ _['class'] }}</th>
+                        <th>{{ _['reason'] }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for absent in absents %}
+                    <tr>
+                        <td>{{ absent.student.roll_number }}</td>
+                        <td>{{ absent.student.name }}</td>
+                        <td>{{ absent.student.class_name }}</td>
+                        <td>{{ absent.reason or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} 

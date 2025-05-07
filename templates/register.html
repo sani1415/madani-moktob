@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{{ _['register_student'] }}</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">{{ _['add_new_student'] }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">{{ _['full_name'] }}</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="roll_number" class="form-label">{{ _['roll_number'] }} <small class="text-muted">({{ _['auto_assigned'] }})</small></label>
+                        <input type="text" class="form-control" id="roll_number" name="roll_number" placeholder="{{ _['roll_number_pattern'] }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="class_name" class="form-label">{{ _['class'] }}</label>
+                        <select class="form-select" id="class_name" name="class_name" required>
+                            <option value="">-- {{ _['select'] }} --</option>
+                            {% for class_name in class_names %}
+                            <option value="{{ class_name }}">{{ class_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">{{ _['phone_number'] }}</label>
+                        <input type="tel" class="form-control" id="phone" name="phone">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">{{ _['email'] }}</label>
+                        <input type="email" class="form-control" id="email" name="email">
+                    </div>
+                    <button type="submit" class="btn btn-primary">{{ _['register'] }}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">{{ _['filter_by'] }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="filter_class" class="form-label">{{ _['class'] }}</label>
+                        <select class="form-select" id="filter_class" name="filter_class">
+                            <option value="">{{ _['all'] }}</option>
+                            {% for class_name in class_names %}
+                            <option value="{{ class_name }}" {% if filter_class == class_name %}selected{% endif %}>{{ class_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="filter_name" class="form-label">{{ _['full_name'] }}</label>
+                        <input type="text" class="form-control" id="filter_name" name="filter_name" value="{{ filter_name }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="filter_roll" class="form-label">{{ _['roll_number'] }}</label>
+                        <input type="text" class="form-control" id="filter_roll" name="filter_roll" value="{{ filter_roll }}">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">{{ _['filter'] }}</button>
+                        <a href="{{ url_for('register') }}" class="btn btn-secondary">{{ _['reset'] }}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">{{ _['registered_students'] }}</h5>
+                <span class="text-muted">{{ _['showing'] }} {{ students|length }} {{ _['of'] }} {{ total_students }} {{ _['students'] }}</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>{{ _['roll_number'] }}</th>
+                                <th>{{ _['full_name'] }}</th>
+                                <th>{{ _['class'] }}</th>
+                                <th>{{ _['phone_number'] }}</th>
+                                <th>{{ _['actions'] }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ student.roll_number }}</td>
+                                <td><a href="{{ url_for('student_details', student_id=student.id) }}">{{ student.name }}</a></td>
+                                <td>{{ student.class_name }}</td>
+                                <td>{{ student.phone or '-' }}</td>
+                                <td>
+                                    <a href="{{ url_for('edit_student', student_id=student.id) }}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-pencil"></i> {{ _['edit'] }}
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination controls -->
+                {% if total_pages > 1 %}
+                <nav aria-label="Student list pagination">
+                    <ul class="pagination justify-content-center">
+                        <!-- Previous button -->
+                        <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('register', page=page-1, filter_class=filter_class, filter_name=filter_name, filter_roll=filter_roll) }}">
+                                {{ _['previous'] }}
+                            </a>
+                        </li>
+                        
+                        <!-- Page numbers -->
+                        {% for p in range(1, total_pages + 1) %}
+                            {% if p == page %}
+                            <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+                            {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('register', page=p, filter_class=filter_class, filter_name=filter_name, filter_roll=filter_roll) }}">
+                                    {{ p }}
+                                </a>
+                            </li>
+                            {% elif p == page - 3 or p == page + 3 %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <!-- Next button -->
+                        <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('register', page=page+1, filter_class=filter_class, filter_name=filter_name, filter_roll=filter_roll) }}">
+                                {{ _['next'] }}
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Database Status</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Students</h5>
+            </div>
+            <div class="card-body">
+                <h2>Total Students: {{ student_count }}</h2>
+                
+                <h5 class="mt-3">Students by Class:</h5>
+                <ul class="list-group">
+                    {% for class_name, count in students_by_class.items() %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ class_name }}
+                        <span class="badge bg-primary rounded-pill">{{ count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Attendance Records</h5>
+            </div>
+            <div class="card-body">
+                <h2>Total Records: {{ attendance_count }}</h2>
+                
+                <h5 class="mt-3">Records by Date:</h5>
+                <ul class="list-group">
+                    {% for date in dates %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ date }}
+                        <span class="badge bg-primary rounded-pill">{{ attendance_by_date[date] }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    <h4 class="alert-heading">Important Note</h4>
+    <p>The database now preserves all student and attendance data between application restarts.</p>
+    <hr>
+    <p class="mb-0">
+        Example students are only added when the database is first created.<br>
+        Any students you register will be permanently saved.
+    </p>
+</div>
+{% endblock %} 

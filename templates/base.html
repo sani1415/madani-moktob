@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<!-- Version: 1.2 - Mobile view improved -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Madrasa Attendance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 40px 0 0; /* Reduced padding from 48px to 40px */
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+        }
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 40px); /* Reduced from 48px to 40px */
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        .navbar {
+            height: 40px; /* Reduced height for navbar */
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        .navbar-brand {
+            padding-top: .5rem;
+            padding-bottom: .5rem;
+            font-size: 1.1rem;
+            background-color: transparent; /* Removed dark background */
+            box-shadow: none; /* Removed shadow */
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
+            width: auto;
+        }
+        .navbar .navbar-toggler {
+            top: .25rem;
+            right: 1rem;
+            z-index: 1030;
+        }
+        .main-content {
+            margin-left: 240px;
+            padding: 20px;
+        }
+        .language-nav {
+            margin-right: 15px;
+        }
+        .language-nav .btn {
+            padding: 0.2rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        .language-nav-mobile {
+            margin-top: 10px;
+            text-align: center;
+            padding: 10px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            display: none;
+        }
+        .language-nav-mobile .btn-group {
+            width: 100%;
+        }
+        .language-nav-mobile .btn {
+            width: 50%;
+        }
+        @media (max-width: 767.98px) {
+            .sidebar {
+                position: static;
+                height: auto;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .navbar-brand {
+                margin-left: 0;
+                margin-right: 0;
+                font-size: 0.9rem;
+            }
+            .language-nav {
+                display: none; /* Hide desktop language nav on mobile */
+            }
+            .language-nav-mobile {
+                display: block; /* Show mobile language nav */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap shadow">
+        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <!-- Centered title replaced Dashboard with Madani Maktab Management -->
+        <a class="navbar-brand text-white text-center" href="#">Madani Maktab Management</a>
+        
+        <!-- Language buttons moved to right side (visible only on desktop) -->
+        <div class="language-nav">
+            <div class="btn-group">
+                <a href="{{ url_for('switch_language', lang='en') }}" class="btn btn-outline-light {% if session.get('lang', 'en') == 'en' %}active{% endif %}">English</a>
+                <a href="{{ url_for('switch_language', lang='bn') }}" class="btn btn-outline-light {% if session.get('lang', 'en') == 'bn' %}active{% endif %}">বাংলা</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <!-- Language toggle for mobile view -->
+                <div class="language-nav-mobile">
+                    <div class="btn-group">
+                        <a href="{{ url_for('switch_language', lang='en') }}" class="btn btn-outline-primary {% if session.get('lang', 'en') == 'en' %}active{% endif %}">English</a>
+                        <a href="{{ url_for('switch_language', lang='bn') }}" class="btn btn-outline-primary {% if session.get('lang', 'en') == 'bn' %}active{% endif %}">বাংলা</a>
+                    </div>
+                </div>
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                                <i class="bi bi-speedometer2"></i> {{ _['dashboard'] }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'register' %}active{% endif %}" href="{{ url_for('register') }}">
+                                <i class="bi bi-person-plus"></i> {{ _['register_student'] }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'attendance' %}active{% endif %}" href="{{ url_for('attendance') }}">
+                                <i class="bi bi-clipboard-check"></i> {{ _['take_attendance'] }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'absent_list' %}active{% endif %}" href="{{ url_for('absent_list') }}">
+                                <i class="bi bi-list-ul"></i> {{ _['absent_list'] }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}" href="{{ url_for('reports') }}">
+                                <i class="bi bi-file-earmark-text"></i> {{ _['reports'] }}
+                            </a>
+                        </li>
+                        <!-- DB Status link -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'db_status' %}active{% endif %}" href="{{ url_for('db_status') }}">
+                                <i class="bi bi-database"></i> {{ _['db_status'] }}
+                            </a>
+                        </li>
+                        <!-- Logout button moved to sidebar as last item -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">
+                                <i class="bi bi-box-arrow-right"></i> {{ _['logout'] }}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

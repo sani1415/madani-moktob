@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{{ _['reports'] }}</h1>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">{{ _['filter_reports'] }}</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="start_date" class="form-label">{{ _['start_date'] }}</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+            </div>
+            <div class="col-md-3">
+                <label for="end_date" class="form-label">{{ _['end_date'] }}</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+            </div>
+            <div class="col-md-3">
+                <label for="class_name" class="form-label">{{ _['class'] }}</label>
+                <select class="form-select" id="class_name" name="class_name">
+                    <option value="">{{ _['all'] }}</option>
+                    {% for class_name_option in class_names %}
+                    <option value="{{ class_name_option }}" {% if class_name == class_name_option %}selected{% endif %}>{{ class_name_option }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">{{ _['apply_filters'] }}</button>
+                <a href="{{ url_for('export_data') }}?start_date={{ start_date }}&end_date={{ end_date }}&class_name={{ class_name }}" class="btn btn-success">{{ _['export_to_excel'] }}</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">{{ _['attendance_records'] }}</h5>
+    </div>
+    <div class="card-body">
+        {% if attendance_records %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>{{ _['date'] }}</th>
+                            <th>{{ _['roll_number'] }}</th>
+                            <th>{{ _['full_name'] }}</th>
+                            <th>{{ _['class'] }}</th>
+                            <th>{{ _['status'] }}</th>
+                            <th>{{ _['reason'] }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in attendance_records %}
+                        <tr>
+                            <td>{{ record.date }}</td>
+                            <td>{{ record.student.roll_number }}</td>
+                            <td><a href="{{ url_for('student_details', student_id=record.student.id) }}">{{ record.student.name }}</a></td>
+                            <td>{{ record.student.class_name }}</td>
+                            <td>
+                                <span class="badge {% if record.status == 'Present' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ record.status }}
+                                </span>
+                            </td>
+                            <td>{{ record.reason or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                {{ _['no_records'] }}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

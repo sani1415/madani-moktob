@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{{ _['take_attendance'] }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <form method="GET" class="d-flex">
+                <input type="date" class="form-control me-2" name="date" value="{{ selected_date }}" onchange="this.form.submit()">
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Class Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <input type="hidden" name="date" value="{{ selected_date }}">
+            <div class="col-md-4">
+                <label for="filter_class" class="form-label">{{ _['filter_by'] }} {{ _['class'] }}</label>
+                <select class="form-select" id="filter_class" name="filter_class" onchange="this.form.submit()">
+                    <option value="">{{ _['all'] }}</option>
+                    {% for class_name in class_names %}
+                    <option value="{{ class_name }}" {% if filter_class == class_name %}selected{% endif %}>{{ class_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<h4 class="mb-3">{{ _['attendance_for'] }} {{ selected_date }}</h4>
+
+<form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+            <thead>
+                <tr>
+                            <th>{{ _['roll_number'] }}</th>
+                            <th>{{ _['full_name'] }}</th>
+                            <th>{{ _['class'] }}</th>
+                            <th>{{ _['status'] }}</th>
+                            <th>{{ _['reason_if_absent'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                            <td>{{ student.roll_number }}</td>
+                    <td>{{ student.name }}</td>
+                            <td>{{ student.class_name }}</td>
+                    <td>
+                        <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="status_{{ student.id }}" id="present_{{ student.id }}" value="Present" {% if attendance_today.get(student.id, {}).status == 'Present' %}checked{% endif %} onclick="hideReason({{ student.id }})">
+                                    <label class="form-check-label" for="present_{{ student.id }}">{{ _['present'] }}</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="status_{{ student.id }}" id="absent_{{ student.id }}" value="Absent" {% if attendance_today.get(student.id, {}).status == 'Absent' %}checked{% endif %} onclick="showReason({{ student.id }})">
+                                    <label class="form-check-label" for="absent_{{ student.id }}">{{ _['absent'] }}</label>
+                        </div>
+                    </td>
+                    <td>
+                                <input type="text" class="form-control reason-field" id="reason_{{ student.id }}" name="reason_{{ student.id }}" value="{{ attendance_today.get(student.id, {}).reason or '' }}" placeholder="{{ _['reason_if_absent'] }}" {% if attendance_today.get(student.id, {}).status != 'Absent' %}style="display: none;"{% endif %}>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+            </div>
+            <button type="submit" class="btn btn-primary">{{ _['save_attendance'] }}</button>
+        </div>
+    </div>
+    </form>
+
+<script>
+    function showReason(studentId) {
+        document.getElementById('reason_' + studentId).style.display = 'block';
+    }
+    
+    function hideReason(studentId) {
+        document.getElementById('reason_' + studentId).style.display = 'none';
+    }
+</script>
+{% endblock %} 
