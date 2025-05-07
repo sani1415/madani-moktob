@@ -1,0 +1,37 @@
+# Virtual Environment
+venv/
+.venv/
+ENV/
+env/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment variables
+.env
+
+# VS Code/Cursor AI specific
+.vscode/
+.idea/
+*.code-workspace
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
