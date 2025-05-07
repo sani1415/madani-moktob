@@ -45,37 +45,6 @@
         </div>
     </div>
     <div class="col-md-7">
-        <div class="card mb-3">
-            <div class="card-header">
-                <h5 class="card-title mb-0">{{ _['filter_by'] }}</h5>
-            </div>
-            <div class="card-body">
-                <form method="GET" class="row g-3">
-                    <div class="col-md-4">
-                        <label for="filter_class" class="form-label">{{ _['class'] }}</label>
-                        <select class="form-select" id="filter_class" name="filter_class">
-                            <option value="">{{ _['all'] }}</option>
-                            {% for class_name in class_names %}
-                            <option value="{{ class_name }}" {% if filter_class == class_name %}selected{% endif %}>{{ class_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="filter_name" class="form-label">{{ _['full_name'] }}</label>
-                        <input type="text" class="form-control" id="filter_name" name="filter_name" value="{{ filter_name }}">
-                    </div>
-                    <div class="col-md-4">
-                        <label for="filter_roll" class="form-label">{{ _['roll_number'] }}</label>
-                        <input type="text" class="form-control" id="filter_roll" name="filter_roll" value="{{ filter_roll }}">
-                    </div>
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary">{{ _['filter'] }}</button>
-                        <a href="{{ url_for('register') }}" class="btn btn-secondary">{{ _['reset'] }}</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-        
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">{{ _['registered_students'] }}</h5>
@@ -86,9 +55,80 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th>{{ _['roll_number'] }}</th>
-                                <th>{{ _['full_name'] }}</th>
-                                <th>{{ _['class'] }}</th>
+                                <th>
+                                    <div class="d-flex align-items-center">
+                                        <span>{{ _['roll_number'] }}</span>
+                                        <div class="dropdown ms-2">
+                                            <button class="btn btn-sm btn-outline-secondary px-1 py-0 filter-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-funnel"></i>
+                                            </button>
+                                            <div class="dropdown-menu p-3">
+                                                <form method="GET" class="column-filter-form" id="roll-filter-form">
+                                                    <input type="hidden" name="filter_class" value="{{ filter_class }}">
+                                                    <input type="hidden" name="filter_name" value="{{ filter_name }}">
+                                                    <div class="mb-2">
+                                                        <input type="text" class="form-control form-control-sm" id="filter_roll_dropdown" name="filter_roll" value="{{ filter_roll }}" placeholder="{{ _['search'] }}...">
+                                                    </div>
+                                                    <div class="filter-buttons-container">
+                                                        <button type="submit" class="btn btn-primary btn-sm filter-action-btn" style="color: white !important;">{{ _['apply'] }}</button>
+                                                        <button type="button" class="btn btn-secondary btn-sm filter-action-btn clear-filter" data-field="roll" style="color: white !important;">{{ _['clear'] }}</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="d-flex align-items-center">
+                                        <span>{{ _['full_name'] }}</span>
+                                        <div class="dropdown ms-2">
+                                            <button class="btn btn-sm btn-outline-secondary px-1 py-0 filter-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-funnel"></i>
+                                            </button>
+                                            <div class="dropdown-menu p-3">
+                                                <form method="GET" class="column-filter-form" id="name-filter-form">
+                                                    <input type="hidden" name="filter_class" value="{{ filter_class }}">
+                                                    <input type="hidden" name="filter_roll" value="{{ filter_roll }}">
+                                                    <div class="mb-2">
+                                                        <input type="text" class="form-control form-control-sm" id="filter_name_dropdown" name="filter_name" value="{{ filter_name }}" placeholder="{{ _['search'] }}...">
+                                                    </div>
+                                                    <div class="filter-buttons-container">
+                                                        <button type="submit" class="btn btn-primary btn-sm filter-action-btn" style="color: white !important;">{{ _['apply'] }}</button>
+                                                        <button type="button" class="btn btn-secondary btn-sm filter-action-btn clear-filter" data-field="name" style="color: white !important;">{{ _['clear'] }}</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="d-flex align-items-center">
+                                        <span>{{ _['class'] }}</span>
+                                        <div class="dropdown ms-2">
+                                            <button class="btn btn-sm btn-outline-secondary px-1 py-0 filter-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-funnel"></i>
+                                            </button>
+                                            <div class="dropdown-menu p-3">
+                                                <form method="GET" class="column-filter-form" id="class-filter-form">
+                                                    <input type="hidden" name="filter_name" value="{{ filter_name }}">
+                                                    <input type="hidden" name="filter_roll" value="{{ filter_roll }}">
+                                                    <div class="mb-2">
+                                                        <select class="form-select form-select-sm" id="filter_class_dropdown" name="filter_class">
+                                                            <option value="">{{ _['all'] }}</option>
+                                                            {% for class_name in class_names %}
+                                                            <option value="{{ class_name }}" {% if filter_class == class_name %}selected{% endif %}>{{ class_name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <div class="filter-buttons-container">
+                                                        <button type="submit" class="btn btn-primary btn-sm filter-action-btn" style="color: white !important;">{{ _['apply'] }}</button>
+                                                        <button type="button" class="btn btn-secondary btn-sm filter-action-btn clear-filter" data-field="class" style="color: white !important;">{{ _['clear'] }}</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
                                 <th>{{ _['phone_number'] }}</th>
                                 <th>{{ _['actions'] }}</th>
                             </tr>
@@ -150,4 +190,116 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Excel-like column filter styling */
+    .filter-btn {
+        font-size: 10px;
+        line-height: 1;
+        border-radius: 3px;
+    }
+    
+    .filter-btn.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    /* Ensure dropdown doesn't close when clicking inside it */
+    .dropdown-menu.show {
+        min-width: 220px;
+    }
+    
+    th {
+        white-space: nowrap;
+    }
+    
+    /* Filter action buttons styling */
+    .filter-action-btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        min-width: 50px;
+        text-align: center;
+        color: white !important;
+        font-weight: 500;
+        display: inline-block;
+        margin: 0 2px;
+    }
+    
+    .filter-action-btn.btn-primary,
+    .filter-action-btn.btn-primary:active,
+    .filter-action-btn.btn-primary:focus,
+    .filter-action-btn.btn-primary:visited {
+        color: #fff !important;
+    }
+    
+    .filter-action-btn.btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        color: white !important;
+    }
+    
+    .filter-action-btn.btn-secondary:hover {
+        background-color: #5c636a;
+        border-color: #565e64;
+        color: white !important;
+    }
+    
+    .filter-action-btn:hover {
+        opacity: 0.9;
+    }
+    
+    /* Button container styling */
+    .filter-buttons-container {
+        display: flex;
+        gap: 4px;
+        justify-content: center;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Highlight filter icons if there's a filter active
+        const filterClass = '{{ filter_class }}';
+        const filterName = '{{ filter_name }}';
+        const filterRoll = '{{ filter_roll }}';
+        
+        if (filterClass) {
+            document.querySelector('th:nth-child(3) .filter-btn').classList.add('active');
+        }
+        
+        if (filterName) {
+            document.querySelector('th:nth-child(2) .filter-btn').classList.add('active');
+        }
+        
+        if (filterRoll) {
+            document.querySelector('th:nth-child(1) .filter-btn').classList.add('active');
+        }
+        
+        // Prevent dropdown from closing when clicking inside it
+        document.querySelectorAll('.dropdown-menu').forEach(dropdown => {
+            dropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+        
+        // Clear filter functionality
+        document.querySelectorAll('.clear-filter').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const field = this.getAttribute('data-field');
+                const form = this.closest('form');
+                
+                if (field === 'class') {
+                    form.querySelector('#filter_class_dropdown').value = '';
+                } else if (field === 'name') {
+                    form.querySelector('#filter_name_dropdown').value = '';
+                } else if (field === 'roll') {
+                    form.querySelector('#filter_roll_dropdown').value = '';
+                }
+                
+                form.submit();
+            });
+        });
+    });
+</script>
 {% endblock %} 
