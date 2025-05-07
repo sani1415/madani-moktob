@@ -86,7 +86,8 @@ translations = {
         'showing': 'Showing',
         'of': 'of',
         'students': 'students',
-        'student_exists_warning': 'A student with the same name and class already exists'
+        'student_exists_warning': 'A student with the same name and class already exists',
+        'apply': 'Apply',
     },
     'bn': {
         'dashboard': 'ড্যাশবোর্ড',
@@ -176,6 +177,7 @@ translations = {
         'showing': 'দেখাচ্ছে',
         'of': 'এর মধ্যে',
         'students': 'ছাত্র',
-        'student_exists_warning': 'একই নাম এবং শ্রেণীর একজন ছাত্র ইতিমধ্যে বিদ্যমান'
+        'student_exists_warning': 'একই নাম এবং শ্রেণীর একজন ছাত্র ইতিমধ্যে বিদ্যমান',
+        'apply': 'প্রয়োগ করুন',
     }
 } 

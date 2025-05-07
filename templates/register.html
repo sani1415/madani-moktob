@@ -70,8 +70,8 @@
                                                         <input type="text" class="form-control form-control-sm" id="filter_roll_dropdown" name="filter_roll" value="{{ filter_roll }}" placeholder="{{ _['search'] }}...">
                                                     </div>
                                                     <div class="filter-buttons-container">
-                                                        <button type="submit" class="btn btn-primary btn-sm filter-action-btn" style="color: white !important;">{{ _['apply'] }}</button>
-                                                        <button type="button" class="btn btn-secondary btn-sm filter-action-btn clear-filter" data-field="roll" style="color: white !important;">{{ _['clear'] }}</button>
+                                                        <button type="submit" class="btn filter-action-btn apply-btn"><i class="bi bi-check-circle me-1"></i>{{ _['apply'] }}</button>
+                                                        <button type="button" class="btn filter-action-btn clear-btn clear-filter" data-field="roll"><i class="bi bi-x-circle"></i></button>
                                                     </div>
                                                 </form>
                                             </div>
@@ -93,8 +93,8 @@
                                                         <input type="text" class="form-control form-control-sm" id="filter_name_dropdown" name="filter_name" value="{{ filter_name }}" placeholder="{{ _['search'] }}...">
                                                     </div>
                                                     <div class="filter-buttons-container">
-                                                        <button type="submit" class="btn btn-primary btn-sm filter-action-btn" style="color: white !important;">{{ _['apply'] }}</button>
-                                                        <button type="button" class="btn btn-secondary btn-sm filter-action-btn clear-filter" data-field="name" style="color: white !important;">{{ _['clear'] }}</button>
+                                                        <button type="submit" class="btn filter-action-btn apply-btn"><i class="bi bi-check-circle me-1"></i>{{ _['apply'] }}</button>
+                                                        <button type="button" class="btn filter-action-btn clear-btn clear-filter" data-field="name"><i class="bi bi-x-circle"></i></button>
                                                     </div>
                                                 </form>
                                             </div>
@@ -121,8 +121,8 @@
                                                         </select>
                                                     </div>
                                                     <div class="filter-buttons-container">
-                                                        <button type="submit" class="btn btn-primary btn-sm filter-action-btn" style="color: white !important;">{{ _['apply'] }}</button>
-                                                        <button type="button" class="btn btn-secondary btn-sm filter-action-btn clear-filter" data-field="class" style="color: white !important;">{{ _['clear'] }}</button>
+                                                        <button type="submit" class="btn filter-action-btn apply-btn"><i class="bi bi-check-circle me-1"></i>{{ _['apply'] }}</button>
+                                                        <button type="button" class="btn filter-action-btn clear-btn clear-filter" data-field="class"><i class="bi bi-x-circle"></i></button>
                                                     </div>
                                                 </form>
                                             </div>
@@ -213,39 +213,39 @@
         white-space: nowrap;
     }
     
-    /* Filter action buttons styling */
+    /* Redesigned filter action buttons for clarity and visibility */
     .filter-action-btn {
-        font-size: 0.75rem;
-        padding: 0.25rem 0.5rem;
-        min-width: 50px;
+        font-size: 0.85rem;
+        padding: 0.35rem 1.1rem;
+        min-width: 70px;
         text-align: center;
-        color: white !important;
-        font-weight: 500;
-        display: inline-block;
-        margin: 0 2px;
+        color: #fff !important;
+        font-weight: 600;
+        border-radius: 0.25rem;
+        border: 1px solid transparent;
+        box-shadow: none;
+        transition: background 0.2s, color 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
-    
-    .filter-action-btn.btn-primary,
-    .filter-action-btn.btn-primary:active,
-    .filter-action-btn.btn-primary:focus,
-    .filter-action-btn.btn-primary:visited {
+    .filter-action-btn.apply-btn {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    .filter-action-btn.apply-btn:hover, .filter-action-btn.apply-btn:focus {
+        background-color: #0b5ed7;
+        border-color: #0a58ca;
         color: #fff !important;
     }
-    
-    .filter-action-btn.btn-secondary {
+    .filter-action-btn.clear-btn {
         background-color: #6c757d;
         border-color: #6c757d;
-        color: white !important;
     }
-    
-    .filter-action-btn.btn-secondary:hover {
-        background-color: #5c636a;
+    .filter-action-btn.clear-btn:hover, .filter-action-btn.clear-btn:focus {
+        background-color: #565e64;
         border-color: #565e64;
-        color: white !important;
-    }
-    
-    .filter-action-btn:hover {
-        opacity: 0.9;
+        color: #fff !important;
     }
     
     /* Button container styling */
@@ -302,4 +302,4 @@
         });
     });
 </script>
-{% endblock %} 
+{% endblock %}
