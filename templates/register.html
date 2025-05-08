@@ -26,9 +26,8 @@
                         <label for="class_name" class="form-label">{{ _['class'] }}</label>
                         <select class="form-select" id="class_name" name="class_name" required>
                             <option value="">-- {{ _['select'] }} --</option>
-                            {% for class_name in class_names %}
-                            <option value="{{ class_name }}">{{ class_name }}</option>
-                            {% endfor %}
+                            {% for class in classes %}
+                            <option value="{{ class.id }}">{{ class.name }}</option>  {% endfor %}
                         </select>
                     </div>
                     <div class="mb-3">
@@ -138,7 +137,7 @@
                             <tr>
                                 <td>{{ student.roll_number }}</td>
                                 <td><a href="{{ url_for('student_details', student_id=student.id) }}">{{ student.name }}</a></td>
-                                <td>{{ student.class_name }}</td>
+                                <td>{{ student.class_relation.name }}</td>  ```
                                 <td>{{ student.phone or '-' }}</td>
                                 <td>
                                     <a href="{{ url_for('edit_student', student_id=student.id) }}" class="btn btn-sm btn-primary">

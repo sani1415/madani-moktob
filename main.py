@@ -39,10 +39,19 @@ class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     roll_number = db.Column(db.String(20), unique=True, nullable=False)
-    class_name = db.Column(db.String(50), nullable=False)
+    # Replace class_name with class_id
+    class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
     phone = db.Column(db.String(15), nullable=True)
     email = db.Column(db.String(100), nullable=True)
     attendance = db.relationship('Attendance', backref='student', lazy=True)
+    class_relation = db.relationship('Class', backref='students', lazy=True)  # Define the relationship
+
+class Class(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+
+    def __repr__(self):
+        return f"<Class {self.name}>"
 
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -73,7 +82,8 @@ def generate_roll_number(class_name):
     prefix = class_num * 100
     
     # Find the highest roll number for this class
-    students = Student.query.filter_by(class_name=class_name).all()
+    # Replace class_name with class_relation.name
+    students = Student.query.join(Class).filter(Class.name == class_name).all()
     max_roll = prefix
     
     for student in students:
@@ -93,11 +103,13 @@ def get_class_statistics(selected_date):
     class_stats = []
     
     # Get unique class names
-    classes = db.session.query(Student.class_name).distinct().all()
+    # Replace Student.class_name with Class.name
+    classes = db.session.query(Class.name).distinct().all()
     classes = [c[0] for c in classes]
     
     for class_name in classes:
-        students = Student.query.filter_by(class_name=class_name).order_by(Student.roll_number.asc()).all()
+        # Join Student and Class tables
+        students = Student.query.join(Class).filter(Class.name == class_name).order_by(Student.roll_number.asc()).all()
         attendance_today = {a.student_id: a for a in Attendance.query.filter_by(date=selected_date).all()}
         
         present = [s for s in students if attendance_today.get(s.id, None) and attendance_today[s.id].status == 'Present']
@@ -141,6 +153,15 @@ def init_db():
     # Add example students if none exist
     if Student.query.count() == 0:
         print("Adding example students")
+        # Create classes first
+        class1 = Class(name='Class 1')
+        class2 = Class(name='Class 2')
+        class3 = Class(name='Class 3')
+        class4 = Class(name='Class 4')
+        class5 = Class(name='Class 5')
+        db.session.add_all([class1, class2, class3, class4, class5])
+        db.session.commit()
+        
         example_students = [
             {
                 'name': 'Ahmed Khan',
@@ -182,35 +203,43 @@ def init_db():
                 'name': 'Hassan Ali',
                 'class_name': 'Class 4',
                 'phone': '03001234573',
-                'email': 'hassan.ali@example.com'
+                'email': 'maryam.javed@example.com'
             },
             {
                 'name': 'Maryam Javed',
                 'class_name': 'Class 4',
                 'phone': '03001234574',
-                'email': 'maryam.javed@example.com'
+                'email': 'hassan.ali@example.com'
             },
             {
                 'name': 'Usman Tariq',
                 'class_name': 'Class 5',
                 'phone': '03001234575',
-                'email': 'usman.tariq@example.com'
+                'email': 'sara.imran@example.com'
             },
             {
                 'name': 'Sara Imran',
                 'class_name': 'Class 5',
                 'phone': '03001234576',
-                'email': 'sara.imran@example.com'
+                'email': 'usman.tariq@example.com'
             }
         ]
         
         for student_data in example_students:
-            # Generate roll number based on class
-            roll_number = generate_roll_number(student_data['class_name'])
-            student_data['roll_number'] = roll_number
-            
-            student = Student(**student_data)
-            db.session.add(student)
+            # Get the class object
+            class_obj = Class.query.filter_by(name=student_data['class_name']).first()
+            if class_obj:
+                # Generate roll number based on class
+                roll_number = generate_roll_number(student_data['class_name'])
+                student_data['roll_number'] = roll_number
+                # Replace class_name with class_id
+                student_data['class_id'] = class_obj.id
+                # Remove class_name only if it exists
+                if 'class_name' in student_data:
+                    del student_data['class_name']
+                
+                student = Student(**student_data)
+                db.session.add(student)
         db.session.commit()
 
 def copy_previous_attendance(current_date):
@@ -315,35 +344,41 @@ def dashboard():
 def register():
     if request.method == 'POST':
         name = request.form['name']
-        class_name = request.form['class_name']
+        class_id = request.form['class_name']  # Get class_id from form
         phone = request.form.get('phone')
         email = request.form.get('email')
         
         # Check if roll number was provided or auto-generate
         roll_number = request.form.get('roll_number')
         if not roll_number:
-            roll_number = generate_roll_number(class_name)
+            # Fetch the class to get the class name
+            class_obj = Class.query.get(class_id)
+            if class_obj:
+                roll_number = generate_roll_number(class_obj.name)
+            else:
+                flash('Invalid Class selected.', 'danger')
+                return redirect(url_for('register'))
         
         # Check if roll number already exists
         if Student.query.filter_by(roll_number=roll_number).first():
-            flash('Roll number already exists')
+            flash('Roll number already exists', 'danger')
             return redirect(url_for('register'))
         
         # Check if student with same name and class already exists
-        existing_student = Student.query.filter_by(name=name, class_name=class_name).first()
+        existing_student = Student.query.filter_by(name=name, class_id=class_id).first()
         if existing_student:
-            flash('Warning: A student with the same name and class already exists. Please check before adding.')
+            flash('Warning: A student with the same name and class already exists. Please check before adding.', 'warning')
             
         student = Student(
             name=name,
             roll_number=roll_number,
-            class_name=class_name,
+            class_id=class_id,
             phone=phone,
             email=email
         )
         db.session.add(student)
         db.session.commit()
-        flash('Student registered successfully')
+        flash('Student registered successfully', 'success')
         return redirect(url_for('register'))
     
     # For GET request, handle filter parameters
@@ -359,7 +394,8 @@ def register():
     query = Student.query
     
     if filter_class:
-        query = query.filter(Student.class_name == filter_class)
+        # Filter by class_id instead of class_name
+        query = query.filter(Student.class_id == filter_class)
     if filter_name:
         query = query.filter(Student.name.ilike(f'%{filter_name}%'))
     if filter_roll:
@@ -373,13 +409,12 @@ def register():
     students = query.paginate(page=page, per_page=per_page, error_out=False)
     total_pages = math.ceil(total_students / per_page)
     
-    # Get unique class names for filter dropdown
-    class_names = [c[0] for c in db.session.query(Student.class_name).distinct().all()]
-    class_names.sort(key=get_class_number)
+    # Get classes for dropdown
+    classes = Class.query.all()
     
     return render_template('register.html', 
                           students=students.items, 
-                          class_names=class_names,
+                          classes=classes,  # Pass classes to template
                           filter_class=filter_class,
                           filter_name=filter_name,
                           filter_roll=filter_roll,
@@ -401,13 +436,13 @@ def attendance():
     filter_class = request.args.get('filter_class', '')
     query = Student.query
     if filter_class:
-        query = query.filter_by(class_name=filter_class)
+        query = query.join(Class).filter(Class.id == filter_class)
     
     # Sort students by roll number
     query = query.order_by(Student.roll_number.asc())
     
     # Get unique class names for filter dropdown
-    class_names = [c[0] for c in db.session.query(Student.class_name).distinct().all()]
+    class_names = [c[0] for c in db.session.query(Class.name).distinct().all()]
     class_names.sort(key=get_class_number)
     
     students = query.all()
@@ -430,7 +465,7 @@ def attendance():
         
         db.session.commit()
         print(f"Updated {updated_count} attendance records")
-        flash('Attendance recorded successfully')
+        flash('Attendance recorded successfully', 'success')
         return redirect(url_for('attendance', date=selected_date, filter_class=filter_class))
     
     attendance_today = {a.student_id: a for a in Attendance.query.filter_by(date=selected_date).all()}
@@ -458,9 +493,9 @@ def reports():
     end_date = request.args.get('end_date', str(date.today()))
     class_name = request.args.get('class_name', '')
     
-    query = Attendance.query.join(Student)
+    query = Attendance.query.join(Student).join(Class)
     if class_name:
-        query = query.filter(Student.class_name == class_name)
+        query = query.filter(Class.name == class_name)
     if start_date:
         query = query.filter(Attendance.date >= start_date)
     if end_date:
@@ -472,7 +507,7 @@ def reports():
     attendance_records = query.all()
     
     # Get unique class names for filter dropdown
-    class_names = [c[0] for c in db.session.query(Student.class_name).distinct().all()]
+    class_names = [c[0] for c in db.session.query(Class.name).distinct().all()]
     class_names.sort(key=get_class_number)
     
     return render_template('reports.html', 
@@ -596,9 +631,11 @@ def db_status():
     # Count students
     student_count = Student.query.count()
     students_by_class = {}
-    class_names = [c[0] for c in db.session.query(Student.class_name).distinct().all()]
+    # Replace Student.class_name with Class.name
+    class_names = [c[0] for c in db.session.query(Class.name).distinct().all()]
     for class_name in class_names:
-        students_by_class[class_name] = Student.query.filter_by(class_name=class_name).count()
+        # Join Student and Class to filter by Class.name
+        students_by_class[class_name] = Student.query.join(Class).filter(Class.name == class_name).count()
     
     # Count attendance records
     attendance_count = Attendance.query.count()
@@ -615,6 +652,52 @@ def db_status():
                           attendance_count=attendance_count,
                           attendance_by_date=attendance_by_date,
                           dates=dates)
+
+# Class Management Routes
+@app.route('/classes')
+@login_required
+def classes():
+    classes = Class.query.all()
+    return render_template('classes.html', classes=classes)
+
+@app.route('/classes/add', methods=['GET', 'POST'])
+@login_required
+def add_class():
+    if request.method == 'POST':
+        name = request.form['name']
+        if Class.query.filter_by(name=name).first():
+            flash('Class name already exists', 'danger')
+            return redirect(url_for('classes'))
+        new_class = Class(name=name)
+        db.session.add(new_class)
+        db.session.commit()
+        flash('Class added successfully', 'success')
+        return redirect(url_for('classes'))
+    return render_template('add_class.html')
+
+@app.route('/classes/edit/<int:class_id>', methods=['GET', 'POST'])
+@login_required
+def edit_class(class_id):
+    class_to_edit = Class.query.get_or_404(class_id)
+    if request.method == 'POST':
+        name = request.form['name']
+        if Class.query.filter_by(name=name).first() and name != class_to_edit.name:
+            flash('Class name already exists', 'danger')
+            return redirect(url_for('classes'))
+        class_to_edit.name = name
+        db.session.commit()
+        flash('Class updated successfully', 'success')
+        return redirect(url_for('classes'))
+    return render_template('edit_class.html', class_to_edit=class_to_edit)
+
+@app.route('/classes/delete/<int:class_id>')
+@login_required
+def delete_class(class_id):
+    class_to_delete = Class.query.get_or_404(class_id)
+    db.session.delete(class_to_delete)
+    db.session.commit()
+    flash('Class deleted successfully', 'success')
+    return redirect(url_for('classes'))
 
 if __name__ == '__main__':
     with app.app_context():
