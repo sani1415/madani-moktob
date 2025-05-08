@@ -61,11 +61,21 @@
                             <td>{{ student.class_relation.name }}</td>
                             <td>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input status-radio" type="radio" name="status_{{ student.id }}" id="present_{{ student.id }}" value="Present" {% if attendance_today.get(student.id, {}).status == 'Present' %}checked{% endif %} onclick="hideReason({{ student.id }})">
+                                    <input class="form-check-input status-radio" type="radio" 
+                                           name="status_{{ student.id }}" 
+                                           id="present_{{ student.id }}" 
+                                           value="Present" 
+                                           {% if attendance_today.get(student.id, {}).status == 'Present' %}checked{% endif %} 
+                                           onclick="hideReason('{{ student.id }}')">
                                     <label class="form-check-label" for="present_{{ student.id }}">{{ _['present'] }}</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input status-radio" type="radio" name="status_{{ student.id }}" id="absent_{{ student.id }}" value="Absent" {% if attendance_today.get(student.id, {}).status == 'Absent' %}checked{% endif %} onclick="showReason({{ student.id }})">
+                                    <input class="form-check-input status-radio" type="radio" 
+                                           name="status_{{ student.id }}" 
+                                           id="absent_{{ student.id }}" 
+                                           value="Absent" 
+                                           {% if attendance_today.get(student.id, {}).status == 'Absent' %}checked{% endif %} 
+                                           onclick="showReason('{{ student.id }}')">
                                     <label class="form-check-label" for="absent_{{ student.id }}">{{ _['absent'] }}</label>
                                 </div>
                             </td>

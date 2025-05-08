@@ -5,7 +5,7 @@
     <h1 class="h2">{{ _['absent_list'] }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group me-2">
-            <input type="date" class="form-control" value="{{ selected_date }}" onchange="window.location.href='{{ url_for('absent_list') }}?date=' + this.value">
+            <input type="date" class="form-control" value="{{ selected_date }}" onchange="navigateToDate(this.value)">
         </div>
     </div>
 </div>
@@ -112,5 +112,10 @@
             notifyModal.hide();
         });
     });
+
+    function navigateToDate(value) {
+        var baseUrl = "{{ url_for('absent_list') }}";
+        window.location.href = baseUrl + "?date=" + value;
+    }
 </script>
 {% endblock %}
