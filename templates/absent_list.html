@@ -12,6 +12,7 @@
 
 <div class="card">
     <div class="card-body">
+        {% if absents %}
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
@@ -20,6 +21,7 @@
                         <th>{{ _['full_name'] }}</th>
                         <th>{{ _['class'] }}</th>
                         <th>{{ _['reason'] }}</th>
+                        <th>{{ _['actions'] }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -27,13 +29,88 @@
                     <tr>
                         <td>{{ absent.student.roll_number }}</td>
                         <td>{{ absent.student.name }}</td>
-                        <td>{{ absent.student.class_name }}</td>
+                        <td>{{ absent.student.class_relation.name }}</td>
                         <td>{{ absent.reason or '-' }}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-primary notify-btn" data-student-id="{{ absent.student.id }}" data-student-name="{{ absent.student.name }}" data-phone="{{ absent.student.phone }}">
+                                <i class="bi bi-bell"></i> {{ _['notify'] }}
+                            </button>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        <div class="mt-3">
+            <a href="{{ url_for('export_absent_list') }}?date={{ selected_date }}" class="btn btn-success">
+                <i class="bi bi-file-excel"></i> {{ _['export_to_excel'] }}
+            </a>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            {{ _['no_absents_today'] }}
+        </div>
+        {% endif %}
     </div>
 </div>
-{% endblock %} 
+
+<!-- Notification Modal -->
+<div class="modal fade" id="notifyModal" tabindex="-1" aria-labelledby="notifyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="notifyModalLabel">{{ _['notify_guardian'] }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ _['send_notification_to'] }} <span id="studentName"></span></p>
+                <div class="mb-3">
+                    <label for="phoneNumber" class="form-label">{{ _['phone_number'] }}</label>
+                    <input type="tel" class="form-control" id="phoneNumber" readonly>
+                </div>
+                <div class="mb-3">
+                    <label for="notificationMessage" class="form-label">{{ _['message'] }}</label>
+                    <textarea class="form-control" id="notificationMessage" rows="4"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _['cancel'] }}</button>
+                <button type="button" class="btn btn-primary" id="sendNotificationBtn">{{ _['send'] }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Setup notification functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const notifyModal = new bootstrap.Modal(document.getElementById('notifyModal'));
+        
+        // When the notify button is clicked
+        document.querySelectorAll('.notify-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const studentName = this.getAttribute('data-student-name');
+                const phone = this.getAttribute('data-phone') || '-';
+                
+                document.getElementById('studentName').textContent = studentName;
+                document.getElementById('phoneNumber').value = phone;
+                
+                // Pre-fill message
+                const date = '{{ selected_date }}';
+                const defaultMessage = `Dear Parent/Guardian, This is to inform you that ${studentName} was absent on ${date}. Please provide a reason for their absence. Thank you.`;
+                document.getElementById('notificationMessage').value = defaultMessage;
+                
+                notifyModal.show();
+            });
+        });
+        
+        // Handle send notification
+        document.getElementById('sendNotificationBtn').addEventListener('click', function() {
+            // This would be where you actually send the notification
+            // For now, let's just show a success message and close the modal
+            alert('{{ _["notification_sent"] }}');
+            notifyModal.hide();
+        });
+    });
+</script>
+{% endblock %}

@@ -34,7 +34,7 @@
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <strong>{{ _['class'] }}:</strong>
-                        <span>{{ student.class_name }}</span>
+                        <span>{{ student.class_relation.name }}</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <strong>{{ _['phone_number'] }}:</strong>
@@ -67,9 +67,9 @@
                             {% elif attendance_percentage >= 50 %}bg-warning
                             {% else %}bg-danger{% endif %}" 
                             role="progressbar" 
-                            style="width: {{ attendance_percentage }}%" 
-                            aria-valuenow="{{ attendance_percentage }}" 
-                            aria-valuemin="0" 
+                            style="width: {{ attendance_percentage }}%"
+                            aria-valuenow="{{ attendance_percentage }}"
+                            aria-valuemin="0"
                             aria-valuemax="100">{{ attendance_percentage }}%</div>
                     </div>
                 </div>
@@ -94,42 +94,86 @@
     <!-- Attendance History -->
     <div class="col-md-8">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">{{ _['attendance_history'] }}</h5>
+                <button class="btn btn-sm btn-outline-primary" id="toggleCalendarView">
+                    <i class="bi bi-calendar3"></i> {{ _['calendar_view'] }}
+                </button>
             </div>
             <div class="card-body">
-                {% if attendance_records %}
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>{{ _['date'] }}</th>
-                                <th>{{ _['status'] }}</th>
-                                <th>{{ _['reason'] }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for record in attendance_records %}
-                            <tr>
-                                <td>{{ record.date }}</td>
-                                <td>
-                                    <span class="badge {% if record.status == 'Present' %}bg-success{% else %}bg-danger{% endif %}">
-                                        {{ record.status }}
-                                    </span>
-                                </td>
-                                <td>{{ record.reason or '-' }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <!-- List View -->
+                <div id="listView">
+                    {% if attendance_records %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>{{ _['date'] }}</th>
+                                    <th>{{ _['status'] }}</th>
+                                    <th>{{ _['reason'] }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in attendance_records %}
+                                <tr>
+                                    <td>{{ record.date }}</td>
+                                    <td>
+                                        <span class="badge {% if record.status == 'Present' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ record.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ record.reason or '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        {{ _['no_records'] }}
+                    </div>
+                    {% endif %}
                 </div>
-                {% else %}
-                <div class="alert alert-info">
-                    {{ _['no_records'] }}
+                
+                <!-- Calendar View (Hidden by default) -->
+                <div id="calendarView" style="display: none;">
+                    <div class="calendar-container">
+                        <!-- Calendar would be rendered here with JavaScript -->
+                        <div class="text-center py-5">
+                            <p>{{ _['loading_calendar'] }}...</p>
+                        </div>
+                    </div>
                 </div>
-                {% endif %}
             </div>
         </div>
     </div>
 </div>
-{% endblock %} 
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const listView = document.getElementById('listView');
+        const calendarView = document.getElementById('calendarView');
+        const toggleBtn = document.getElementById('toggleCalendarView');
+        
+        toggleBtn.addEventListener('click', function() {
+            if (listView.style.display !== 'none') {
+                listView.style.display = 'none';
+                calendarView.style.display = 'block';
+                toggleBtn.innerHTML = '<i class="bi bi-list"></i> {{ _["list_view"] }}';
+                
+                // Here we would initialize the calendar
+                // For demo purposes, let's just show a message
+                calendarView.innerHTML = `
+                    <div class="alert alert-info">
+                        {{ _['calendar_feature_coming_soon'] }}
+                    </div>
+                `;
+            } else {
+                listView.style.display = 'block';
+                calendarView.style.display = 'none';
+                toggleBtn.innerHTML = '<i class="bi bi-calendar3"></i> {{ _["calendar_view"] }}';
+            }
+        });
+    });
+</script>
+{% endblock %}

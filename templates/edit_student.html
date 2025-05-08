@@ -21,8 +21,12 @@
                 <input type="text" class="form-control" id="roll_number" name="roll_number" value="{{ student.roll_number }}" required>
             </div>
             <div class="mb-3">
-                <label for="class_name" class="form-label">{{ _['class'] }}</label>
-                <input type="text" class="form-control" id="class_name" name="class_name" value="{{ student.class_name }}" required>
+                <label for="class_id" class="form-label">{{ _['class'] }}</label>
+                <select class="form-select" id="class_id" name="class_id" required>
+                    {% for class in classes %}
+                    <option value="{{ class.id }}" {% if student.class_id == class.id %}selected{% endif %}>{{ class.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="mb-3">
                 <label for="phone" class="form-label">{{ _['phone_number'] }}</label>
@@ -39,4 +43,4 @@
         </form>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

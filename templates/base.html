@@ -94,6 +94,18 @@
                 display: block; /* Show mobile language nav */
             }
         }
+        
+        /* Keyboard shortcuts tooltip */
+        .keyboard-shortcut {
+            display: inline-block;
+            margin-left: 5px;
+            padding: 0 5px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
     </style>
 </head>
 <body>
@@ -137,8 +149,14 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'classes' %}active{% endif %}" href="{{ url_for('classes') }}">
+                                <i class="bi bi-book"></i> {{ _['classes'] }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {% if request.endpoint == 'attendance' %}active{% endif %}" href="{{ url_for('attendance') }}">
                                 <i class="bi bi-clipboard-check"></i> {{ _['take_attendance'] }}
+                                <span class="keyboard-shortcut">Alt+A</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -171,7 +189,7 @@
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                         {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
+                            <div class="alert alert-{{ category or 'info' }} alert-dismissible fade show mt-3" role="alert">
                                 {{ message }}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
@@ -184,5 +202,25 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Global keyboard shortcuts -->
+    <script>
+        document.addEventListener('keydown', function(e) {
+            // Alt+A: Go to attendance page
+            if (e.altKey && e.key === 'a') {
+                window.location.href = "{{ url_for('attendance') }}";
+            }
+            
+            // Alt+D: Go to dashboard
+            if (e.altKey && e.key === 'd') {
+                window.location.href = "{{ url_for('dashboard') }}";
+            }
+            
+            // Alt+R: Go to register student
+            if (e.altKey && e.key === 'r') {
+                window.location.href = "{{ url_for('register') }}";
+            }
+        });
+    </script>
 </body>
 </html>

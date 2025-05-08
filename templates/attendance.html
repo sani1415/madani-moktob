@@ -21,8 +21,8 @@
                 <label for="filter_class" class="form-label">{{ _['filter_by'] }} {{ _['class'] }}</label>
                 <select class="form-select" id="filter_class" name="filter_class" onchange="this.form.submit()">
                     <option value="">{{ _['all'] }}</option>
-                    {% for class_name in class_names %}
-                    <option value="{{ class_name }}" {% if filter_class == class_name %}selected{% endif %}>{{ class_name }}</option>
+                    {% for class in classes %}
+                    <option value="{{ class.id }}" {% if filter_class == class.id|string %}selected{% endif %}>{{ class.name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -30,51 +30,63 @@
     </div>
 </div>
 
-<h4 class="mb-3">{{ _['attendance_for'] }} {{ selected_date }}</h4>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>{{ _['attendance_for'] }} {{ selected_date }}</h4>
+    <div>
+        <button id="markAllPresent" class="btn btn-success btn-sm me-2">{{ _['mark_all_present'] }}</button>
+        <button id="markAllAbsent" class="btn btn-danger btn-sm">{{ _['mark_all_absent'] }}</button>
+    </div>
+</div>
 
-<form method="POST">
+<form method="POST" id="attendanceForm">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-striped">
-            <thead>
-                <tr>
+                    <thead>
+                        <tr>
                             <th>{{ _['roll_number'] }}</th>
                             <th>{{ _['full_name'] }}</th>
                             <th>{{ _['class'] }}</th>
                             <th>{{ _['status'] }}</th>
                             <th>{{ _['reason_if_absent'] }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for student in students %}
-                <tr>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
                             <td>{{ student.roll_number }}</td>
-                    <td>{{ student.name }}</td>
-                            <td>{{ student.class_name }}</td>
-                    <td>
-                        <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="status_{{ student.id }}" id="present_{{ student.id }}" value="Present" {% if attendance_today.get(student.id, {}).status == 'Present' %}checked{% endif %} onclick="hideReason({{ student.id }})">
+                            <td>{{ student.name }}</td>
+                            <td>{{ student.class_relation.name }}</td>
+                            <td>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input status-radio" type="radio" name="status_{{ student.id }}" id="present_{{ student.id }}" value="Present" {% if attendance_today.get(student.id, {}).status == 'Present' %}checked{% endif %} onclick="hideReason({{ student.id }})">
                                     <label class="form-check-label" for="present_{{ student.id }}">{{ _['present'] }}</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="status_{{ student.id }}" id="absent_{{ student.id }}" value="Absent" {% if attendance_today.get(student.id, {}).status == 'Absent' %}checked{% endif %} onclick="showReason({{ student.id }})">
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input status-radio" type="radio" name="status_{{ student.id }}" id="absent_{{ student.id }}" value="Absent" {% if attendance_today.get(student.id, {}).status == 'Absent' %}checked{% endif %} onclick="showReason({{ student.id }})">
                                     <label class="form-check-label" for="absent_{{ student.id }}">{{ _['absent'] }}</label>
-                        </div>
-                    </td>
-                    <td>
+                                </div>
+                            </td>
+                            <td>
                                 <input type="text" class="form-control reason-field" id="reason_{{ student.id }}" name="reason_{{ student.id }}" value="{{ attendance_today.get(student.id, {}).reason or '' }}" placeholder="{{ _['reason_if_absent'] }}" {% if attendance_today.get(student.id, {}).status != 'Absent' %}style="display: none;"{% endif %}>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            <button type="submit" class="btn btn-primary">{{ _['save_attendance'] }}</button>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <button type="submit" class="btn btn-primary">{{ _['save_attendance'] }}</button>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="autoSaveSwitch">
+                    <label class="form-check-label" for="autoSaveSwitch">{{ _['auto_save'] }}</label>
+                </div>
+            </div>
         </div>
     </div>
-    </form>
+</form>
 
 <script>
     function showReason(studentId) {
@@ -84,5 +96,76 @@
     function hideReason(studentId) {
         document.getElementById('reason_' + studentId).style.display = 'none';
     }
+    
+    // Mark all present/absent functionality
+    document.getElementById('markAllPresent').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.status-radio[value="Present"]').forEach(function(radio) {
+            radio.checked = true;
+            
+            // Hide all reason fields
+            const studentId = radio.id.replace('present_', '');
+            hideReason(studentId);
+        });
+        
+        // If auto-save is enabled, submit the form
+        if (document.getElementById('autoSaveSwitch').checked) {
+            document.getElementById('attendanceForm').submit();
+        }
+    });
+    
+    document.getElementById('markAllAbsent').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.status-radio[value="Absent"]').forEach(function(radio) {
+            radio.checked = true;
+            
+            // Show all reason fields
+            const studentId = radio.id.replace('absent_', '');
+            showReason(studentId);
+        });
+        
+        // If auto-save is enabled, submit the form
+        if (document.getElementById('autoSaveSwitch').checked) {
+            document.getElementById('attendanceForm').submit();
+        }
+    });
+    
+    // Auto-save functionality when changing status
+    const statusRadios = document.querySelectorAll('.status-radio');
+    const autoSaveSwitch = document.getElementById('autoSaveSwitch');
+    
+    statusRadios.forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            if (autoSaveSwitch.checked) {
+                // Wait a brief moment for the user to potentially enter a reason
+                setTimeout(function() {
+                    document.getElementById('attendanceForm').submit();
+                }, 500);
+            }
+        });
+    });
+    
+    // Keyboard shortcuts for attendance page
+    document.addEventListener('keydown', function(e) {
+        // If focus is in a text field, don't trigger shortcuts
+        if (document.activeElement.tagName === 'INPUT' && document.activeElement.type === 'text') {
+            return;
+        }
+        
+        // P: Mark all present
+        if (e.key === 'p' && !e.ctrlKey && !e.altKey) {
+            document.getElementById('markAllPresent').click();
+        }
+        
+        // A: Mark all absent
+        if (e.key === 'a' && !e.ctrlKey && !e.altKey) {
+            document.getElementById('markAllAbsent').click();
+        }
+        
+        // S: Save form
+        if (e.key === 's' && !e.ctrlKey && !e.altKey) {
+            document.getElementById('attendanceForm').submit();
+        }
+    });
 </script>
-{% endblock %} 
+{% endblock %}

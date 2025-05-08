@@ -436,14 +436,13 @@ def attendance():
     filter_class = request.args.get('filter_class', '')
     query = Student.query
     if filter_class:
-        query = query.join(Class).filter(Class.id == filter_class)
+        query = query.filter(Student.class_id == filter_class)
     
     # Sort students by roll number
     query = query.order_by(Student.roll_number.asc())
     
-    # Get unique class names for filter dropdown
-    class_names = [c[0] for c in db.session.query(Class.name).distinct().all()]
-    class_names.sort(key=get_class_number)
+    # Get classes for dropdown
+    classes = Class.query.all()
     
     students = query.all()
     
@@ -476,7 +475,7 @@ def attendance():
                          students=students, 
                          attendance_today=attendance_today,
                          selected_date=selected_date,
-                         class_names=class_names,
+                         classes=classes,
                          filter_class=filter_class)
 
 @app.route('/absent')
@@ -561,10 +560,44 @@ def export_data():
         download_name=f'attendance_report_{start_date}_to_{end_date}.xlsx'
     )
 
+@app.route('/export_absent_list')
+@login_required
+def export_absent_list():
+    selected_date = request.args.get('date', str(date.today()))
+    
+    absents = Attendance.query.filter_by(date=selected_date, status='Absent').join(Student).all()
+    
+    data = []
+    for absent in absents:
+        data.append({
+            'Date': selected_date,
+            'Roll Number': absent.student.roll_number,
+            'Student Name': absent.student.name,
+            'Class': absent.student.class_relation.name,
+            'Reason': absent.reason or '-',
+            'Phone': absent.student.phone or '-'
+        })
+    
+    df = pd.DataFrame(data)
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Absent Students')
+    
+    output.seek(0)
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=f'absent_students_{selected_date}.xlsx'
+    )
+
 @app.route('/edit_student/<int:student_id>', methods=['GET', 'POST'])
 @login_required
 def edit_student(student_id):
     student = Student.query.get_or_404(student_id)
+    # Get all classes for the dropdown
+    classes = Class.query.all()
+    
     if request.method == 'POST':
         student.name = request.form['name']
         
@@ -573,17 +606,18 @@ def edit_student(student_id):
         if new_roll_number != student.roll_number:
             # Check if the new roll number already exists
             if Student.query.filter_by(roll_number=new_roll_number).first():
-                flash('Roll number already exists')
-                return render_template('edit_student.html', student=student)
+                flash('Roll number already exists', 'danger')
+                return render_template('edit_student.html', student=student, classes=classes)
             student.roll_number = new_roll_number
         
-        student.class_name = request.form['class_name']
+        student.class_id = request.form['class_id']
         student.phone = request.form.get('phone')
         student.email = request.form.get('email')
         db.session.commit()
-        flash('Student information updated successfully')
+        flash('Student information updated successfully', 'success')
         return redirect(url_for('register'))
-    return render_template('edit_student.html', student=student)
+    
+    return render_template('edit_student.html', student=student, classes=classes)
 
 @app.route('/student/<int:student_id>')
 @login_required
